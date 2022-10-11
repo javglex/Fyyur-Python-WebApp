@@ -274,7 +274,7 @@ def edit_artist(artist_id):
   data={
     "id": artist_id,
     "name": artist.name,
-    "genres": ["Jazz", "Reggae", "Swing", "Classical", "Folk"], # TODO use real data
+    "genres": artist.genres,
     "city": artist.city,
     "state": artist.state,
     "phone": artist.phone,
