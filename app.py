@@ -123,6 +123,7 @@ def show_venue(venue_id):
     "website": venue.website_link,
     "facebook_link": venue.facebook_link,
     "seeking_talent": venue.seeking_talent,
+    "seeking_description": venue.seeking_description,
     "image_link": venue.image_link,
     "past_shows": pastShowData,
     "upcoming_shows": upcomingShowData,
@@ -149,7 +150,7 @@ def create_venue_submission():
     state = request.form.get('state', '')
     phone = request.form.get('phone', '')
     image_link = request.form.get('image_link', '')
-    genres = request.form.get('genres', '')
+    genres = request.form.getlist('genres')
     address = request.form.get('address','')
     facebook_link = request.form.get('facebook_link', '')
     website_link = request.form.get('website_link', '')
@@ -187,14 +188,19 @@ def create_venue_submission():
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
   return render_template('pages/home.html')
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>/delete', methods=['GET'])
 def delete_venue(venue_id):
-  # TODO: Complete this endpoint for taking a venue_id, and using
-  # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
-
-  # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-  # clicking that button delete it from the db then redirect the user to the homepage
-  return None
+  try:
+      print('deleting venue with id:', venue_id)
+      venue = Venue.query.get(venue_id)
+      db.session.delete(venue)
+      db.session.commit()
+  except:
+      db.session.rollback()
+      print('exception while deleting todo')
+  finally:
+      db.session.close()
+  return render_template('pages/home.html')
 
 #  Artists
 #  ----------------------------------------------------------------
@@ -251,6 +257,7 @@ def show_artist(artist_id):
     "website": artist.website_link,
     "facebook_link": artist.facebook_link,
     "seeking_venue": artist.seeking_venue,
+    "seeking_description": artist.seeking_description,
     "image_link": artist.image_link,
     "past_shows": pastShowData,
     "upcoming_shows": upcomingShowData,
@@ -358,7 +365,7 @@ def create_artist_submission():
     state = request.form.get('state', '')
     phone = request.form.get('phone', '')
     image_link = request.form.get('image_link', '')
-    genres = request.form.get('genres', '')
+    genres = request.form.getlist('genres')
     facebook_link = request.form.get('facebook_link', '')
     website_link = request.form.get('website_link', '')
     seeking_venue =  True if 'seeking_venue' in request.form else False
