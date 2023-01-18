@@ -41,5 +41,7 @@ pip install -r requirements.txt
 ### Run the development server:
 
 export FLASK_APP=myapp
+
 export FLASK_ENV=development # enables debug mode
+
 python3 app.py
