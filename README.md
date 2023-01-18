@@ -33,3 +33,13 @@ Highlight folders:
 * `app.py` -- Defines routes that match the user’s URL, and controllers which handle data and renders views to the user. This is the main file you will be working on to connect to and manipulate the database and render views with data to the user, based on the URL.
 * Models in `app.py` -- Defines the data models that set up the database tables.
 * `config.py` -- Stores configuration variables and instructions, separate from the main application code. This is where you will need to connect to the database.
+
+### Install the dependencies:
+
+pip install -r requirements.txt
+
+### Run the development server:
+
+export FLASK_APP=myapp
+export FLASK_ENV=development # enables debug mode
+python3 app.py

@@ -143,37 +143,43 @@ def create_venue_form():
 @app.route('/venues/create', methods=['POST'])
 def create_venue_submission():
   error = False
+  form = VenueForm(request.form, meta={'csrf': False})
   # called to create new shows in the db, upon submitting new show listing form
   try:
-    name = request.form.get('name', '') # get our data using json key
-    city = request.form.get('city', '')
-    state = request.form.get('state', '')
-    phone = request.form.get('phone', '')
-    image_link = request.form.get('image_link', '')
-    genres = request.form.getlist('genres')
-    address = request.form.get('address','')
-    facebook_link = request.form.get('facebook_link', '')
-    website_link = request.form.get('website_link', '')
-    seeking_talent =  True if 'seeking_talent' in request.form else False
-    seeking_description = request.form.get('seeking_description', '')
-    print('seeking venue:' + str(seeking_talent))
+    name = form['name'].data # get our data using json key
+    city = form['city'].data
+    state = form['state'].data
+    phone = form['phone'].data
+    image_link = form['image_link'].data
+    genres = form['genres'].data
+    address = form['address'].data
+    facebook_link = form['facebook_link'].data
+    website_link = form['website_link'].data
+    seeking_talent =  True if 'seeking_talent' in form else False
+    seeking_description = form['seeking_description'].data
 
-    newVenue = Venue(
-      name=name,
-      city=city,
-      state=state,
-      phone=phone,
-      address=address,
-      image_link=image_link,
-      genres=genres,
-      facebook_link=facebook_link,
-      website_link=website_link,
-      seeking_talent=seeking_talent,
-      seeking_description = seeking_description
-    )
-
-    db.session.add(newVenue) # added todo as a pending change, not yet commited
-    db.session.commit() # commit our record
+    if form.validate():
+      newVenue = Venue(
+        name=name,
+        city=city,
+        state=state,
+        phone=phone,
+        address=address,
+        image_link=image_link,
+        genres=genres,
+        facebook_link=facebook_link,
+        website_link=website_link,
+        seeking_talent=seeking_talent,
+        seeking_description = seeking_description
+      )
+      db.session.add(newVenue) # added todo as a pending change, not yet commited
+      db.session.commit() # commit our record
+    else: 
+      error = True
+      message = ''
+      for field, err in form.errors.items():
+        message+=field + ' ' + '|'.join(err) + '. '
+      flash('Error validating form: ' + str(message))
   except:
       error = True
       db.session.rollback()
@@ -183,10 +189,11 @@ def create_venue_submission():
 
   if error:
     flash('Error creating Venue')
+    return render_template('forms/new_venue.html', form=form)
   if not error:
     # on successful db insert, flash success
     flash('Venue ' + request.form['name'] + ' was successfully listed!')
-  return render_template('pages/home.html')
+    return render_template('pages/home.html')
 
 @app.route('/venues/<venue_id>/delete', methods=['GET'])
 def delete_venue(venue_id):
@@ -237,9 +244,9 @@ def show_artist(artist_id):
   pastShowData = []
   for show in joinedShows:
     showData = {
-        "artist_id": show.artist_id,
-        "artist_name": show.artist.name,
-        "artist_image_link": show.artist.image_link,
+        "venue_id": show.venue_id,
+        "venue_name": show.venue.name,
+        "venue_image_link": show.venue.image_link,
         "start_time": str(show.start_time)
       }
     if show.start_time> now:
@@ -359,43 +366,52 @@ def create_artist_form():
 @app.route('/artists/create', methods=['POST'])
 def create_artist_submission():
   error = False
+  form = ArtistForm(request.form, meta={'csrf': False})
   try:
-    name = request.form.get('name', '') # get our data using json key
-    city = request.form.get('city', '')
-    state = request.form.get('state', '')
-    phone = request.form.get('phone', '')
-    image_link = request.form.get('image_link', '')
-    genres = request.form.getlist('genres')
-    facebook_link = request.form.get('facebook_link', '')
-    website_link = request.form.get('website_link', '')
+    name = form['name'].data
+    city = form['city'].data
+    state = form['state'].data
+    phone = form['phone'].data
+    image_link = form['image_link'].data
+    genres = form['genres'].data
+    facebook_link = form['facebook_link'].data
+    website_link = form['website_link'].data
     seeking_venue =  True if 'seeking_venue' in request.form else False
-    seeking_description = request.form.get('seeking_description', '')
+    seeking_description = form['seeking_description'].data
     print('seeking venue:' + str(seeking_venue))
 
-    newArtist = Artist(
-      name=name,
-      city=city,
-      state=state,
-      phone=phone,
-      image_link=image_link,
-      genres=genres,
-      facebook_link=facebook_link,
-      website_link=website_link,
-      seeking_venue=seeking_venue,
-      seeking_description = seeking_description
-    )
+    if form.validate():
+      newArtist = Artist(
+        name=name,
+        city=city,
+        state=state,
+        phone=phone,
+        image_link=image_link,
+        genres=genres,
+        facebook_link=facebook_link,
+        website_link=website_link,
+        seeking_venue=seeking_venue,
+        seeking_description = seeking_description
+      )
 
-    db.session.add(newArtist) # added todo as a pending change, not yet commited
-    db.session.commit() # commit our record
-  except:
+      db.session.add(newArtist) # added todo as a pending change, not yet commited
+      db.session.commit() # commit our record
+    else: 
       error = True
-      db.session.rollback()
-      print(sys.exc_info())
+      message = ''
+      for field, err in form.errors.items():
+        message+=field + ' ' + '|'.join(err) + '. '
+      flash('Error validating form: ' + str(message))
+  except:
+    error = True
+    db.session.rollback()
+    print(sys.exc_info())
   finally:
     db.session.close()
 
   if error:
     flash('Error creating Artist')
+    return render_template('forms/new_artist.html', form=form)
   if not error:
     # on successful db insert, flash success
     flash('Artist ' + request.form['name'] + ' was successfully listed!')
